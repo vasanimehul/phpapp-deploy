@@ -1,0 +1,12 @@
+version: 0.2
+phases:
+  build:
+    commands:
+      - aws ecr get-login-password | docker login --username AWS --password-stdin $ECR_ENDPOINT
+      - docker build -t phpapp .
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7) 
+      - IMAGE_TAG=${COMMIT_HASH:=latest} 
+      - docker tag phpapp:latest $ECR_IMAGE_URL:latest
+      - docker tag phpapp:latest $ECR_IMAGE_URL:$IMAGE_TAG
+      - docker push $ECR_IMAGE_URL:latest
+      - docker push $ECR_IMAGE_URL:$IMAGE_TAG
